@@ -86,8 +86,8 @@ def build_pdf(history_df, preserve, output_path):
     doc = SimpleDocTemplate(
         output_path,
         pagesize=landscape(letter),
-        leftMargin=0.4 * inch,
-        rightMargin=0.4 * inch,
+        leftMargin=0.2 * inch,
+        rightMargin=0.2 * inch,
         topMargin=0.5 * inch,
         bottomMargin=0.5 * inch,
     )
@@ -211,3 +211,4 @@ def build_pdf(history_df, preserve, output_path):
 
     doc.build(story)
     return output_path
+
