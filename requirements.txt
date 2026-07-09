@@ -1,13 +1,5 @@
 #Requirements
-pandas
-os
-re
-shutil      
-tempfile     
-time
-os
-importlib
-pkgutil
+pandas      
 streamlit
 matplotlib
 reportlab
