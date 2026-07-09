@@ -28,7 +28,7 @@ def extract_preserve_from_package_id(package_id):
     preserve = re.sub(r"[^A-Za-z]", "", preserve)
 
     # Strip trailing phase/unit suffixes — longest first
-    preserve = re.sub(r"(PHIII|PHII|PHI|PH|X)$", "", preserve, flags=re.IGNORECASE)
+    preserve = re.sub(r"(PHIII|PHII|PHI|PH|X|III|II|I)$", "", preserve, flags=re.IGNORECASE)
 
     return preserve if preserve else "Unknown"
 
@@ -91,7 +91,7 @@ def update_preserve_history_generic(row, filename):
 
 
 # ==========================================================
-# Generic Master Workbook Saver (works for ANY table type)
+# Generic Master Workbook Saver
 # ==========================================================
 def update_master_summary_generic(summary_df, filename):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -112,3 +112,4 @@ def update_master_summary_generic(summary_df, filename):
 
     combined.to_excel(filename, index=False)
     return combined
+
