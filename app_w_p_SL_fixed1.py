@@ -57,14 +57,36 @@ st.info("Results will be packaged into a downloadable ZIP file.")
 # ==========================================================
 st.subheader("Precipitation Data (optional)")
 
-precip_master_path = st.file_uploader(
+# ==========================================================
+# PRECIPITATION DATA (optional)
+# ==========================================================
+
+st.subheader("Precipitation Data (optional)")
+
+precip_upload = st.file_uploader(
     "Upload precipitation workbook (optional)",
     type=["xlsx", "xls"],
     key="precip_upload"
 )
 
-if precip_master_path is not None:
-    st.success("Precipitation workbook uploaded.")
+precip_master_path = None
+
+if precip_upload is not None:
+
+    # Save uploaded file temporarily so graph modules can use a filepath
+    temp_precip_path = os.path.join(
+        tempfile.gettempdir(),
+        precip_upload.name
+    )
+
+    with open(temp_precip_path, "wb") as f:
+        f.write(precip_upload.getbuffer())
+
+    precip_master_path = temp_precip_path
+
+    st.success(
+        f"Precipitation workbook loaded: {precip_upload.name}"
+    )
 
 # ==========================================================
 # YEAR SELECTION
