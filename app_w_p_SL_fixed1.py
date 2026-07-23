@@ -41,58 +41,12 @@ csv_df["Preserve"] = csv_df["Package_ID"].apply(extract_preserve_from_package_id
 # ==========================================================
 # OUTPUT LOCATION
 # ==========================================================
-st.subheader("Select Output Folder")
 
+# Create a temporary folder for this run.
+# All generated files will be placed here and later zipped.
+output_dir = tempfile.mkdtemp()
 
-def _browse_for_folder():
-    import tkinter as tk
-    from tkinter import filedialog
-
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    path = filedialog.askdirectory()
-    root.destroy()
-    return path
-
-
-col1, col2 = st.columns([4, 1])
-with col1:
-    output_dir_input = st.text_input(
-        "Output Folder (full path)",
-        value=st.session_state.get("output_dir", ""),
-    )
-with col2:
-    st.write("")  # vertical spacer to align button with text input
-    st.write("")
-    if st.button("Browse...", key="browse_output_dir"):
-        picked = _browse_for_folder()
-        if picked:
-            output_dir_input = os.path.normpath(picked)
-            st.session_state["output_dir"] = output_dir_input
-            st.rerun()
-
-if output_dir_input:
-    output_dir_clean = output_dir_input.replace('"', '').replace("'", "").strip()
-    output_dir_clean = os.path.normpath(output_dir_clean)
-    st.session_state["output_dir"] = output_dir_clean
-
-output_dir = st.session_state.get("output_dir", None)
-
-if output_dir:
-    if not os.path.isdir(output_dir):
-        try:
-            os.makedirs(output_dir, exist_ok=True)
-            st.success(f"Created folder: {output_dir}")
-        except OSError as e:
-            st.error(f"Invalid folder path: {e}")
-            output_dir = None
-    else:
-        st.success(output_dir)
-
-if not output_dir:
-    st.info("Select an output folder to continue.")
-    st.stop()
+st.info("Results will be packaged into a downloadable ZIP file.")
 
 # ==========================================================
 # PRECIPITATION DATA (optional)
@@ -100,35 +54,17 @@ if not output_dir:
 st.subheader("Precipitation Data (optional)")
 
 
-def _browse_for_file():
-    import tkinter as tk
-    from tkinter import filedialog
+precip_file = st.file_uploader(
+    "Upload precipitation workbook (optional)",
+    type=["xlsx", "xls"],
+    key="precip_upload"
+)
 
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    path = filedialog.askopenfilename(
-        filetypes=[("Excel Workbook", "*.xlsx *.xls"), ("All files", "*.*")]
-    )
-    root.destroy()
-    return path
+precip_master_path = None
 
-
-col1, col2 = st.columns([4, 1])
-with col1:
-    precip_path_input = st.text_input(
-        "Precip Master Workbook Path (optional -- enables precip overlay on graphs)",
-        value=st.session_state.get("precip_master_path", ""),
-    )
-with col2:
-    st.write("")
-    st.write("")
-    if st.button("Browse...", key="browse_precip_path"):
-        picked = _browse_for_file()
-        if picked:
-            precip_path_input = os.path.normpath(picked)
-            st.session_state["precip_master_path"] = precip_path_input
-            st.rerun()
+if precip_file is not None:
+    precip_master_path = precip_file
+    st.success("Precipitation workbook uploaded.")
 
 if precip_path_input:
     precip_path_clean = precip_path_input.replace('"', '').replace("'", "").strip()
@@ -372,4 +308,36 @@ if st.button("Run Analysis"):
                     f"run that table type first."
                 )
 
-    st.success("All files written to: " + output_dir)
+  # ==========================================================
+# CREATE DOWNLOADABLE ZIP
+# ==========================================================
+
+zip_path = os.path.join(output_dir, "Preserve_Monitoring_Results.zip")
+
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+    for root, dirs, files in os.walk(output_dir):
+        for file in files:
+
+            # Don't include the ZIP inside itself
+            if file == "Preserve_Monitoring_Results.zip":
+                continue
+
+            full_path = os.path.join(root, file)
+
+            arcname = os.path.relpath(
+                full_path,
+                output_dir
+            )
+
+            zipf.write(full_path, arcname)
+
+st.success("Analysis complete!")
+
+with open(zip_path, "rb") as fp:
+    st.download_button(
+        label="📥 Download All Results",
+        data=fp,
+        file_name="Preserve_Monitoring_Results.zip",
+        mime="application/zip",
+    )
+
