@@ -51,38 +51,20 @@ output_dir = tempfile.mkdtemp()
 st.info("Results will be packaged into a downloadable ZIP file.")
 
 # ==========================================================
+
+# ==========================================================
 # PRECIPITATION DATA (optional)
 # ==========================================================
 st.subheader("Precipitation Data (optional)")
 
-
-precip_file = st.file_uploader(
+precip_master_path = st.file_uploader(
     "Upload precipitation workbook (optional)",
     type=["xlsx", "xls"],
     key="precip_upload"
 )
 
-precip_master_path = None
-
-if precip_file is not None:
-    precip_master_path = precip_file
+if precip_master_path is not None:
     st.success("Precipitation workbook uploaded.")
-
-if precip_path_input:
-    precip_path_clean = precip_path_input.replace('"', '').replace("'", "").strip()
-    precip_path_clean = os.path.normpath(precip_path_clean)
-    st.session_state["precip_master_path"] = precip_path_clean
-
-precip_master_path = st.session_state.get("precip_master_path", None)
-
-if precip_master_path:
-    if os.path.exists(precip_master_path):
-        st.success(f"Precip data found: {precip_master_path}")
-    else:
-        st.warning(
-            f"Path doesn't exist yet -- overlay will be skipped until it's available: "
-            f"{precip_master_path}"
-        )
 
 # ==========================================================
 # YEAR SELECTION
